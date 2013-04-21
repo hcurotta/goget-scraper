@@ -1,4 +1,4 @@
-Goget's car search sucks. 
+#Goget's car search sucks. 
 
 They have a map which shows current availability for all cars, but you can't see what kind of car it is. So you have to go into the bookings interface and search near an address. When you search here, you can see only a list of cars and addresses. The only map is the size of a postage stamp and doesnt show much at all. You are left searching all over the place if you want particular vehicle type (e.g. a van or a ute). 
 
@@ -8,6 +8,7 @@ First I needed to get a list of every pod (car space) they have, and the lat and
 
 After digging around for a bit, I found that rather than fetching pods dynamically, goget renders details of every single pod in the country in a javascript file... so it declares about 3000 variables...yep. for instance:
 
+```javascript
 var image_url0="http://www.goget.com.au/bookings//secret/plugins/available_now_plugin/icons/arrow_green.gif";
 var point0 = new google.maps.LatLng(-33.899, 151.183);
 var info0 = "<iframe frameborder=0 scrolling=auto height=150 width=100% src=http://www.goget.com.au/bookings/locations/podPopup.php?pod_id=2 width=100%></iframe>";
@@ -17,7 +18,7 @@ var image_url1="http://www.goget.com.au/bookings//secret/plugins/available_now_p
 var point1 = new google.maps.LatLng(-33.8939, 151.1776);
 var info1 = "<iframe frameborder=0 scrolling=auto height=150 width=100% src=http://www.goget.com.au/bookings/locations/podPopup.php?pod_id=4 width=100%></iframe>";
 createPod(point1, info1,image_url1);
-
+```
 ...and so on for all 1000 odd pods
 
 I'll write a script to parse that later.
@@ -38,11 +39,13 @@ Looks like the bookings page has all i need in the form. There's a hidden field 
 
 Mechanize lets me use xpath to parse the page and find the elements I need. Some fairly rubbish string manipulation cleans it up.
 
+```ruby
 vehicle_name = page.parser.xpath("//option[@value='200']").text.split(' - ').first
 vehicle_type = page.parser.xpath("//option[@value='#{vehicle_id}']").text.split(' - ').first.split('the').last.strip
 pod_name = page.parser.xpath("//td[text()='Pod Name:']/following-sibling::td[1]").text
 area_id = page.parser.xpath("//td[text()='Pod Name:']/following-sibling::td[1]/a").last.attributes["href"].value.split('=').last.to_i
 pod_id = page.form('main')['pod'].to_i
+```
 
 Awesome... so now I have all the data I need. All I have to do is throw both the location data and the vehicle data into some hashes and do a join on pod_id.
 
