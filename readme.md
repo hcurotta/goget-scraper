@@ -37,7 +37,36 @@ http://www.goget.com.au/bookings/edit_entry.php?rt=1&room=200
 
 Looks like the bookings page has all i need in the form. There's a hidden field in there with the pod_id and the vehicle_id is also shown. This is gives me my join. It also gives me some handy stuff like the name of the vehicle and pod. All I have to do is load that page up about 1700 times to get info for all the cars, iterating on the vehicle/room id.
 
-Mechanize lets me use xpath to parse the page and find the elements I need. Some fairly rubbish string manipulation cleans it up.
+Mechanize is a great Gem that allows you to interact with html pages and perform actions. First I'll need to login
+
+```ruby
+
+require 'mechanize'
+
+def login(agent)
+	puts 'logging in...'
+
+	login_page = agent.get('http://www.goget.com.au/bookings/login.php')
+
+	account_page = login_page.form('Login') do |f|
+	  f.vUser  = 'username'
+	  f.vPwd   = 'password'
+	end.click_button
+end
+
+agent = Mechanize.new
+login(agent)
+
+```
+
+Now I can call up the bookings page where all the vehicle info lives...
+
+```ruby
+page = agent.get("http://www.goget.com.au/bookings/edit_entry.php?rt=1&room=#{vehicle_id}")
+
+```
+
+Mechanizelets me use xpath to parse the bookings page and find the elements I need. Some fairly rubbish string manipulation cleans it up.
 
 ```ruby
 vehicle_name = page.parser.xpath("//option[@value='200']").text.split(' - ').first
@@ -46,6 +75,8 @@ pod_name = page.parser.xpath("//td[text()='Pod Name:']/following-sibling::td[1]"
 area_id = page.parser.xpath("//td[text()='Pod Name:']/following-sibling::td[1]/a").last.attributes["href"].value.split('=').last.to_i
 pod_id = page.form('main')['pod'].to_i
 ```
+
+I can loop through the above and increment the id each time to get info for each of the vehicles.
 
 Awesome... so now I have all the data I need. All I have to do is throw both the location data and the vehicle data into some hashes and do a join on pod_id.
 
