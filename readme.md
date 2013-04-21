@@ -66,7 +66,7 @@ page = agent.get("http://www.goget.com.au/bookings/edit_entry.php?rt=1&room=#{ve
 
 ```
 
-Mechanizelets me use xpath to parse the bookings page and find the elements I need. Some fairly rubbish string manipulation cleans it up.
+Mechanize lets me use xpath to parse the bookings page and find the elements I need. Some fairly rubbish string manipulation cleans it up.
 
 ```ruby
 vehicle_name = page.parser.xpath("//option[@value='200']").text.split(' - ').first
